@@ -1,0 +1,50 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import { getLatestLaunches, getLaunchBy } from '../../services/spacex'
+const { id } = Astro.params
+
+let launch
+if (id) {
+	launch = await getLaunchBy({ id })
+}
+
+export async function getStaticPaths() {
+	const launches = await getLatestLaunches()
+
+	return launches.map((launch) => ({
+		params: { id: launch.id }
+	}))
+}
+
+console.log(launch)
+const successImage =
+	'../../images/success.jpg'
+const failureImage =
+	'../../images/failure.gif'
+const statusImage = launch?.success ? successImage : failureImage
+---
+
+<Layout title={`Lanzamiento ${id}`}>
+	<article class='flex flex-col gap-y-4'>
+		<div class='flex gap-x-10 justify-center'>
+			<img src={launch?.links?.patch.small} alt={launch?.name} />
+			<iframe
+				class='w-96 h-auto'
+				src={`https://www.youtube.com/embed/${launch?.links?.youtube_id}`}
+				allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+				allowfullscreen>
+			</iframe>
+		</div>
+		<h2 class='text-4xl text-white font-bold mt-5'>
+			Launch #{launch?.flight_number}
+		</h2>
+		<p class='text-lg'>{launch?.details}</p>
+		<p>
+			<img
+				src={statusImage}
+				alt={launch?.success ? 'Lanzamiento Exitoso' : 'Lanzamiento fallido'}
+				class='w-52 h-auto'
+			/>
+		</p>
+	</article>
+</Layout>
